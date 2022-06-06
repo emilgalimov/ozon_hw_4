@@ -3,7 +3,8 @@ package main
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"gitlab.ozon.dev/emilgalimov/homework-4/saga"
+	"gitlab.ozon.dev/emilgalimov/homework-4/internal/config"
+	"gitlab.ozon.dev/emilgalimov/homework-4/internal/saga"
 	"log"
 	"math/rand"
 	"strconv"
@@ -11,11 +12,16 @@ import (
 )
 
 func main() {
-	brokers := []string{"localhost:9095", "localhost:9096"}
-	cfg := sarama.NewConfig()
-	cfg.Producer.Return.Successes = true
+	cfg, err := config.NewConfig("config.yaml")
 
-	syncProducer, err := sarama.NewSyncProducer(brokers, cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	saramacfg := sarama.NewConfig()
+	saramacfg.Producer.Return.Successes = true
+
+	syncProducer, err := sarama.NewSyncProducer(cfg.Kafka.Brokers, saramacfg)
 	if err != nil {
 		log.Fatalf("sync kafka: %v", err)
 	}
@@ -43,7 +49,7 @@ func main() {
 			ProductIds: products,
 		})
 		par, off, err := syncProducer.SendMessage(&sarama.ProducerMessage{
-			Topic: "orders_to_confirm",
+			Topic: cfg.Kafka.ConfirmOrders,
 			Key:   sarama.StringEncoder(strconv.Itoa(orderNumber)),
 			Value: sarama.ByteEncoder(message),
 		})

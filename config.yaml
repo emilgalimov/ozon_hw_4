@@ -1,0 +1,31 @@
+kafka:
+  brokers:
+    - "localhost:9095"
+    - "localhost:9096"
+    - "localhost:9097"
+  confirm_orders: "orders_to_confirm"
+  write_off: "warehouse_writed_off"
+  rejected: "rejected_confirmed_orders"
+  delivered: "order_delivered"
+storage:
+  db:
+    host: 127.0.0.1
+    port: 5432
+    user: user
+    password: pass
+    database_name: storage
+pays:
+  db:
+    host: 127.0.0.1
+    port: 5433
+    user: user
+    password: pass
+    database_name: pays
+notifications:
+  db:
+    host: 127.0.0.1
+    port: 5434
+    user: user
+    password: pass
+    database_name: notifications
+
