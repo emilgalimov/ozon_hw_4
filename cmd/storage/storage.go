@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"github.com/Shopify/sarama"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/config"
 	"log"
@@ -19,36 +19,67 @@ func main() {
 		log.Fatal(err)
 	}
 
-	consumer, err := sarama.NewConsumer(cfg.Kafka.Brokers, nil)
+	saramaConfig := sarama.NewConfig()
+	client, err := sarama.NewConsumerGroup(cfg.Kafka.Brokers, "storage", saramaConfig)
 	if err != nil {
-		fmt.Printf("fail to start consumer, err:%v\n", err)
-		return
+		log.Panicf("Error creating consumer group client: %v", err)
+	}
+	ctx := context.Background()
+
+	consumer := Consumer{
+		ready: make(chan bool),
 	}
 
-	partitionList, err := consumer.Partitions(cfg.Kafka.ConfirmOrders)
-	if err != nil {
-		fmt.Printf("fail to get list of partition:err%v\n", err)
-		return
-	}
-
-	var wg sync.WaitGroup
-
-	fmt.Println(partitionList)
-	for partition := range partitionList {
-		wg.Add(1)
-		pc, err := consumer.ConsumePartition(cfg.Kafka.ConfirmOrders, int32(partition), sarama.OffsetNewest)
-		if err != nil {
-			fmt.Printf("failed to start consumer for partition %d,err:%v\n", partition, err)
-			return
-		}
-		defer pc.AsyncClose()
-		go func(sarama.PartitionConsumer) {
-			defer wg.Done()
-
-			for msg := range pc.Messages() {
-				fmt.Printf("Partition:%d Offset:%d Key:%v Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		for {
+			if err := client.Consume(ctx, []string{cfg.Kafka.ConfirmOrders}, &consumer); err != nil {
+				log.Panicf("Error from consumer: %v", err)
 			}
-		}(pc)
-	}
+			if ctx.Err() != nil {
+				return
+			}
+			consumer.ready = make(chan bool)
+		}
+	}()
 	wg.Wait()
+}
+
+// Consumer represents a Sarama consumer group consumer
+type Consumer struct {
+	ready chan bool
+}
+
+// Setup is run at the beginning of a new session, before ConsumeClaim
+func (consumer *Consumer) Setup(sarama.ConsumerGroupSession) error {
+	// Mark the consumer as ready
+	close(consumer.ready)
+	return nil
+}
+
+// Cleanup is run at the end of a session, once all ConsumeClaim goroutines have exited
+func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+// ConsumeClaim must start a consumer loop of ConsumerGroupClaim's Messages().
+func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	// NOTE:
+	// Do not move the code below to a goroutine.
+	// The `ConsumeClaim` itself is called within a goroutine, see:
+	// https://github.com/Shopify/sarama/blob/main/consumer_group.go#L27-L29
+	for {
+		select {
+		case message := <-claim.Messages():
+			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+			session.MarkMessage(message, "")
+
+		// Should return when `session.Context()` is done.
+		// If not, will raise `ErrRebalanceInProgress` or `read tcp <ip>:<port>: i/o timeout` when kafka rebalance. see:
+		// https://github.com/Shopify/sarama/issues/1192
+		case <-session.Context().Done():
+			return nil
+		}
+	}
 }
