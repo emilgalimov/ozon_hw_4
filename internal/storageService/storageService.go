@@ -1,4 +1,4 @@
-package storage
+package storageService
 
 type Storage struct {
 	repo repository
@@ -10,6 +10,6 @@ func NewStorage(repo repository) *Storage {
 	}
 }
 
-func (s Storage) WriteOff(orderID int, productID []int) bool {
-	return true
+func (s Storage) Reserve(orderID int, productID []int) error {
+	return nil
 }

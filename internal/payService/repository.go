@@ -1,4 +1,4 @@
-package storage
+package payService
 
 type repository interface {
 }

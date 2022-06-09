@@ -6,7 +6,7 @@ import (
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/config"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/db"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/saga"
-	"gitlab.ozon.dev/emilgalimov/homework-4/internal/storage"
+	"gitlab.ozon.dev/emilgalimov/homework-4/internal/storageService"
 	"log"
 	"sync"
 )
@@ -27,7 +27,7 @@ func main() {
 
 	repo := db.NewStorageRepo()
 
-	stor := storage.NewStorage(repo)
+	stor := storageService.NewStorage(repo)
 
 	saramaConfig.Producer.Return.Successes = true
 

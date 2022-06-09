@@ -3,19 +3,19 @@ package saga
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"gitlab.ozon.dev/emilgalimov/homework-4/internal/storage"
+	"gitlab.ozon.dev/emilgalimov/homework-4/internal/storageService"
 	"log"
 	"strconv"
 )
 
 type StorageReserver struct {
-	storage          *storage.Storage
+	storage          *storageService.Storage
 	producer         sarama.SyncProducer
 	successTopicName string
 }
 
 func NewStorageReserver(
-	storage *storage.Storage,
+	storage *storageService.Storage,
 	producer sarama.SyncProducer,
 	successTopicName string,
 ) *StorageReserver {
@@ -44,21 +44,20 @@ func (s *StorageReserver) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			if err != nil {
 				return err
 			}
-			isSend := s.storage.WriteOff(confirmMessage.OrderID, confirmMessage.ProductIds)
-			if isSend {
-				par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
-					Topic: s.successTopicName,
-					Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
-					Value: sarama.ByteEncoder(message.Value),
-				})
-				if err != nil {
-					return err
-				}
-				log.Printf("Message SUCCESS %v -> %v; %v", par, off, err)
-
-			} else {
-				log.Printf("Message ERROR: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+			reserveError := s.storage.Reserve(confirmMessage.OrderID, confirmMessage.ProductIds)
+			if reserveError != nil {
+				log.Printf("Reserve ERROR: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+				continue
 			}
+			par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
+				Topic: s.successTopicName,
+				Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
+				Value: sarama.ByteEncoder(message.Value),
+			})
+			if err != nil {
+				return err
+			}
+			log.Printf("Reserve SUCCESS %v -> %v; %v", par, off, err)
 		case <-session.Context().Done():
 			return nil
 		}
