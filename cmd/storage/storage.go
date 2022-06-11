@@ -19,7 +19,11 @@ func main() {
 	}
 
 	saramaConfig := sarama.NewConfig()
-	client, err := sarama.NewConsumerGroup(cfg.Kafka.Brokers, "storage", saramaConfig)
+	client1, err := sarama.NewConsumerGroup(cfg.Kafka.Brokers, "storage", saramaConfig)
+	if err != nil {
+		log.Panicf("Error creating consumer group client: %v", err)
+	}
+	client2, err := sarama.NewConsumerGroup(cfg.Kafka.Brokers, "storage", saramaConfig)
 	if err != nil {
 		log.Panicf("Error creating consumer group client: %v", err)
 	}
@@ -41,8 +45,23 @@ func main() {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
-			if err := client.Consume(ctx, []string{cfg.Kafka.ConfirmOrders}, consumer); err != nil {
+			if err := client1.Consume(ctx, []string{cfg.Kafka.ConfirmOrders}, consumer); err != nil {
+				log.Panicf("Error from consumer: %v", err)
+			}
+			if ctx.Err() != nil {
+				return
+			}
+		}
+	}()
+
+	consumer2 := saga.NewStorageUnreserver(stor, syncProducer)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			if err := client2.Consume(ctx, []string{cfg.Kafka.Rejected}, consumer2); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			if ctx.Err() != nil {

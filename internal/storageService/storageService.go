@@ -13,3 +13,7 @@ func NewStorage(repo repository) *Storage {
 func (s Storage) Reserve(orderID int, productID []int) error {
 	return nil
 }
+
+func (s Storage) Unreserve(orderID int, productID []int) error {
+	return nil
+}
