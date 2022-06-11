@@ -24,13 +24,13 @@ type Kafka struct {
 type Config struct {
 	Kafka   Kafka `yaml:"kafka"`
 	Storage struct {
-		db Postgres `yaml:"db"`
+		Db Postgres `yaml:"db"`
 	} `yaml:"storage"`
 	Pays struct {
-		db Postgres `yaml:"db"`
+		Db Postgres `yaml:"db"`
 	} `yaml:"pays"`
 	Notifications struct {
-		db Postgres `yaml:"db"`
+		Db Postgres `yaml:"db"`
 	} `yaml:"notifications"`
 }
 

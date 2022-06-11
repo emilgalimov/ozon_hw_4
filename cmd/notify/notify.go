@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/Shopify/sarama"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/config"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/db"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/notifyService"
@@ -25,7 +27,21 @@ func main() {
 	}
 	ctx := context.Background()
 
-	repo := db.NewNotifyRepo()
+	connectString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		cfg.Notifications.Db.User,
+		cfg.Notifications.Db.Password,
+		cfg.Notifications.Db.Host,
+		cfg.Notifications.Db.Port,
+		cfg.Notifications.Db.DbName,
+	)
+
+	conn, _ := pgxpool.Connect(ctx, connectString)
+
+	if err := conn.Ping(ctx); err != nil {
+		log.Fatal("error pinging db: ", err)
+	}
+
+	repo := db.NewNotifyRepo(conn)
 
 	notify := notifyService.NewNotifyService(repo)
 

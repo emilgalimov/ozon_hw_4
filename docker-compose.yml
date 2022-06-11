@@ -83,7 +83,7 @@ services:
       - POSTGRES_DB=${DB_NAME_1}
       - DATABASE_HOST=${DB_HOST_1}
     ports:
-      - '${DB_HOST_1}:5432'
+      - '${DB_HOST_1}:${DB_PORT_1}:5432'
     networks:
       - hw4
 
@@ -96,7 +96,7 @@ services:
       - POSTGRES_DB=${DB_NAME_2}
       - DATABASE_HOST=${DB_HOST_2}
     ports:
-      - '${DB_HOST_2}:5432'
+      - '${DB_HOST_2}:${DB_PORT_2}:5432'
     networks:
       - hw4
 
@@ -109,6 +109,6 @@ services:
       - POSTGRES_DB=${DB_NAME_3}
       - DATABASE_HOST=${DB_HOST_3}
     ports:
-      - '${DB_HOST_3}:5432'
+      - '${DB_HOST_3}:${DB_PORT_3}:5432'
     networks:
       - hw4
