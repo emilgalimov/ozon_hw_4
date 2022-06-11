@@ -28,11 +28,11 @@ func main() {
 	ctx := context.Background()
 
 	connectString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		cfg.Notifications.Db.User,
-		cfg.Notifications.Db.Password,
-		cfg.Notifications.Db.Host,
-		cfg.Notifications.Db.Port,
-		cfg.Notifications.Db.DbName,
+		cfg.Pays.Db.User,
+		cfg.Pays.Db.Password,
+		cfg.Pays.Db.Host,
+		cfg.Pays.Db.Port,
+		cfg.Pays.Db.DbName,
 	)
 
 	conn, _ := pgxpool.Connect(ctx, connectString)

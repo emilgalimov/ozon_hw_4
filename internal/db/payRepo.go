@@ -18,9 +18,9 @@ func NewPayRepo(pool *pgxpool.Pool) *PayRepo {
 
 func (r PayRepo) Save(pay pay.Payment) {
 	//language=PostgreSQL
-	const sql = `INSERT INTO storage(order_id, product_id, is_reserved) VALUES ($1, $2, $3)`
+	const sql = `INSERT INTO payments(order_id, sum, created_at) VALUES ($1, $2, $3)`
 
 	ctx := context.Background()
 
-	r.pool.QueryRow(ctx, sql, pay.OrderID, pay.Sum, pay.CreatedAt)
+	_, _ = r.pool.Query(ctx, sql, pay.OrderID, pay.Sum, pay.CreatedAt)
 }
