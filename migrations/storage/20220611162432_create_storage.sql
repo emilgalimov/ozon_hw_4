@@ -3,7 +3,7 @@
 CREATE TABLE storage(
     order_id int,
     product_id int,
-    isReserved boolean
+    is_reserved boolean
 );
 -- +goose StatementEnd
 
