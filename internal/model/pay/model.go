@@ -2,7 +2,7 @@ package pay
 
 import "time"
 
-type Payments struct {
+type Payment struct {
 	OrderID   int
 	Sum       float32
 	CreatedAt time.Time

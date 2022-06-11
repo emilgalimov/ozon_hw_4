@@ -1,6 +1,6 @@
 package storage
 
-type Payments struct {
+type StoreItem struct {
 	OrderID    int
 	ProductID  int
 	IsReserved bool

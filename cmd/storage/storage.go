@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/Shopify/sarama"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/config"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/db"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/saga"
@@ -29,7 +31,21 @@ func main() {
 	}
 	ctx := context.Background()
 
-	repo := db.NewStorageRepo()
+	connectString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		cfg.Storage.Db.User,
+		cfg.Storage.Db.Password,
+		cfg.Storage.Db.Host,
+		cfg.Storage.Db.Port,
+		cfg.Storage.Db.DbName,
+	)
+
+	conn, _ := pgxpool.Connect(ctx, connectString)
+
+	if err := conn.Ping(ctx); err != nil {
+		log.Fatal("error pinging db: ", err)
+	}
+
+	repo := db.NewStorageRepo(conn)
 
 	stor := storageService.NewStorage(repo)
 
