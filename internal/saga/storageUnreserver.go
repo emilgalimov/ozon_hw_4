@@ -40,11 +40,7 @@ func (s *StorageUnreserver) ConsumeClaim(session sarama.ConsumerGroupSession, cl
 			if err != nil {
 				return err
 			}
-			unreserveError := s.storage.Unreserve(confirmMessage.OrderID, confirmMessage.ProductIds)
-			if unreserveError != nil {
-				log.Printf("Unreserve ERROR: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-				continue
-			}
+			s.storage.Unreserve(confirmMessage.OrderID)
 			log.Printf("Unreserve SUCCESS ID %v", confirmMessage.OrderID)
 		case <-session.Context().Done():
 			return nil
