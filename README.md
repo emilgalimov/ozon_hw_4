@@ -17,3 +17,6 @@ quick start
 ```make storage```
 
 ```make producer```
+
+Накатить через клинет БД фикстуру склада 
+migrations/storage/storage_public_storage.sql (не придумал более элегантный способ)

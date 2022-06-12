@@ -50,7 +50,7 @@ func (s *orderPayer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sar
 
 			withdrawErr := s.payService.WithdrawPayment(confirmMessage.OrderID)
 			if withdrawErr != nil {
-				par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
+				_, _, err := s.producer.SendMessage(&sarama.ProducerMessage{
 					Topic: s.errorTopicName,
 					Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
 					Value: sarama.ByteEncoder(message.Value),
@@ -58,11 +58,11 @@ func (s *orderPayer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sar
 				if err != nil {
 					return err
 				}
-				log.Printf("Pay ERROR %v -> %v; %v", par, off, err)
+				log.Printf("Pay ERROR ID %v", confirmMessage.OrderID)
 				continue
 			}
 
-			par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
+			_, _, _ = s.producer.SendMessage(&sarama.ProducerMessage{
 				Topic: s.successTopicName,
 				Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
 				Value: sarama.ByteEncoder(message.Value),
@@ -70,7 +70,7 @@ func (s *orderPayer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sar
 			if err != nil {
 				return err
 			}
-			log.Printf("Pay SUCCESS %v -> %v; %v", par, off, err)
+			log.Printf("Pay SUCCESS ID %v", confirmMessage.OrderID)
 
 		case <-session.Context().Done():
 			return nil

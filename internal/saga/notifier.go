@@ -57,12 +57,12 @@ func (s *notifier) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 				confirmMessage.CurrentTry++
 				repeatMessage, _ := json.Marshal(confirmMessage)
 				log.Printf("Notify ERROR %v", confirmMessage.OrderID)
-				par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
+				_, _, _ = s.producer.SendMessage(&sarama.ProducerMessage{
 					Topic: s.repeatTopicName,
 					Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
 					Value: sarama.ByteEncoder(repeatMessage),
 				})
-				log.Printf("Notify repeat %v -> %v; %v", par, off, err)
+				log.Printf("Notify REPEAT %v", confirmMessage.OrderID)
 				break
 			}
 

@@ -46,10 +46,10 @@ func (s *StorageReserver) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			}
 			reserveError := s.storage.Reserve(confirmMessage.OrderID, confirmMessage.ProductIds)
 			if reserveError != nil {
-				log.Printf("Reserve ERROR: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+				log.Printf("Reserve ERROR ID = %v", confirmMessage.OrderID)
 				continue
 			}
-			par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
+			_, _, _ = s.producer.SendMessage(&sarama.ProducerMessage{
 				Topic: s.successTopicName,
 				Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
 				Value: sarama.ByteEncoder(message.Value),
@@ -57,7 +57,7 @@ func (s *StorageReserver) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			if err != nil {
 				return err
 			}
-			log.Printf("Reserve SUCCESS %v -> %v; %v", par, off, err)
+			log.Printf("Reserve SUCCESS ID = %v", confirmMessage.OrderID)
 		case <-session.Context().Done():
 			return nil
 		}
