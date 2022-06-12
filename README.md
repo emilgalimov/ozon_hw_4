@@ -4,3 +4,16 @@
 
 ![image](./concept.png)
 
+quick start
+
+```docker-compose up -d```
+
+```make migrate```
+
+```make notify```
+
+```make pay```
+
+```make storage```
+
+```make producer```

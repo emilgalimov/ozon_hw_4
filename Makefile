@@ -2,6 +2,18 @@
 include .env.default
 include .env
 
+notify:
+	go run ./cmd/notify/notify.go
+
+pay:
+	go run ./cmd/pay/pay.go
+
+storage:
+	go run ./cmd/storage/storage.go
+
+producer:
+	go run ./cmd/producer/producer.go
+
 migrate: migratenotify migratepay migratestorage
 
 migratestorage:
