@@ -37,20 +37,24 @@ func (s *notifier) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	for {
 		select {
 		case message := <-claim.Messages():
+
 			confirmMessage := &OrderToConfirmMessage{}
 
 			err := json.Unmarshal(message.Value, confirmMessage)
 			if err != nil {
 				return err
 			}
-
-			withdrawErr := s.notifyService.Notify(confirmMessage.OrderID)
-			if withdrawErr != nil {
+			var withdrawErr error
+			//TODO переделать в повтор транзакции
+			for i := 0; i < 10; i++ {
+				withdrawErr = s.notifyService.Notify(confirmMessage.OrderID)
+				if withdrawErr == nil {
+					log.Printf("Notify SUCCESS %v", confirmMessage.OrderID)
+					return nil
+				}
 				log.Printf("Notify ERROR %v", confirmMessage.OrderID)
-				continue
 			}
-
-			log.Printf("Notify SUCCESS %v", confirmMessage.OrderID)
+			return withdrawErr
 
 		case <-session.Context().Done():
 			return nil
