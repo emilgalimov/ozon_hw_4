@@ -49,7 +49,7 @@ func main() {
 			ProductIds: products,
 		})
 		par, off, err := syncProducer.SendMessage(&sarama.ProducerMessage{
-			Topic: cfg.Kafka.ConfirmOrders,
+			Topic: cfg.Kafka.Delivered,
 			Key:   sarama.StringEncoder(strconv.Itoa(orderNumber)),
 			Value: sarama.ByteEncoder(message),
 		})

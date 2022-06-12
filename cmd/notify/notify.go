@@ -56,13 +56,15 @@ func main() {
 		notify,
 		syncProducer,
 		3,
+		cfg.Kafka.Delivered,
 	)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
-			if err := client.Consume(ctx, []string{cfg.Kafka.WriteOff}, consumer); err != nil {
+			if err := client.Consume(ctx, []string{cfg.Kafka.Delivered}, consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			if ctx.Err() != nil {

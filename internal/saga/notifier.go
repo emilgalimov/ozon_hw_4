@@ -5,23 +5,27 @@ import (
 	"github.com/Shopify/sarama"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/notifyService"
 	"log"
+	"strconv"
 )
 
 type notifier struct {
-	notifyService *notifyService.NotifyService
-	producer      sarama.SyncProducer
-	numOfTries    int
+	notifyService   *notifyService.NotifyService
+	producer        sarama.SyncProducer
+	numOfTries      int
+	repeatTopicName string
 }
 
 func NewNotifier(
 	notifyService *notifyService.NotifyService,
 	producer sarama.SyncProducer,
 	numOfTries int,
+	repeatTopicName string,
 ) *notifier {
 	return &notifier{
-		notifyService: notifyService,
-		producer:      producer,
-		numOfTries:    numOfTries,
+		notifyService:   notifyService,
+		producer:        producer,
+		numOfTries:      numOfTries,
+		repeatTopicName: repeatTopicName,
 	}
 }
 
@@ -37,24 +41,32 @@ func (s *notifier) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	for {
 		select {
 		case message := <-claim.Messages():
-
-			confirmMessage := &OrderToConfirmMessage{}
+			confirmMessage := &RepeatableOrderToConfirmMessage{}
 
 			err := json.Unmarshal(message.Value, confirmMessage)
 			if err != nil {
-				return err
+				break
 			}
-			var withdrawErr error
-			//TODO переделать в повтор транзакции
-			for i := 0; i < 10; i++ {
-				withdrawErr = s.notifyService.Notify(confirmMessage.OrderID)
-				if withdrawErr == nil {
-					log.Printf("Notify SUCCESS %v", confirmMessage.OrderID)
-					return nil
-				}
+
+			if confirmMessage.CurrentTry >= s.numOfTries {
+				break
+			}
+
+			withdrawErr := s.notifyService.Notify(confirmMessage.OrderID)
+			if withdrawErr != nil {
+				confirmMessage.CurrentTry++
+				repeatMessage, _ := json.Marshal(confirmMessage)
 				log.Printf("Notify ERROR %v", confirmMessage.OrderID)
+				par, off, err := s.producer.SendMessage(&sarama.ProducerMessage{
+					Topic: s.repeatTopicName,
+					Key:   sarama.StringEncoder(strconv.Itoa(confirmMessage.OrderID)),
+					Value: sarama.ByteEncoder(repeatMessage),
+				})
+				log.Printf("Notify repeat %v -> %v; %v", par, off, err)
+				break
 			}
-			return withdrawErr
+
+			log.Printf("Notify SUCCESS %v", confirmMessage.OrderID)
 
 		case <-session.Context().Done():
 			return nil
