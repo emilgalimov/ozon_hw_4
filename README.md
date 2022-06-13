@@ -18,5 +18,5 @@ quick start
 
 ```make producer```
 
-Накатить через клинет БД фикстуру склада 
-migrations/storage/storage_public_storage.sql (не придумал более элегантный способ)
+Накатить через клинт БД фикстуру склада в базу storage
+migrations/storage_public_storage.sql (не придумал более элегантный способ)

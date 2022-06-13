@@ -1,0 +1,14 @@
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (341737, 111485, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (341737, 111485, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (341737, 515026, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (984059, 954425, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (339106, 186258, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (339106, 511528, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (984059, 941318, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (339106, 965466, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (627189, 913000, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (987202, 435746, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (987202, 71563, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (987202, 14376, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (879241, 653033, true);
+INSERT INTO public.storage (order_id, product_id, is_reserved) VALUES (879241, 138643, true);
