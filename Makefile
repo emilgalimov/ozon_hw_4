@@ -14,7 +14,13 @@ storage:
 producer:
 	go run ./cmd/producer/producer.go
 
-migrate: migratenotify migratepay migratestorage
+migrate: migratestorageeven migratestorageodd migratestorage migratenotify migratepay migratestorage
+
+migratestorageeven:
+	cd migrations/storage_even; ./goose postgres "host=${DB_HOST_1} port=${DB_PORT_1_EVEN} user=${DB_USER_1} password=${DB_PASSWORD_1} dbname=${DB_NAME_1} sslmode=disable" up
+
+migratestorageodd:
+	cd migrations/storage_odd; ./goose postgres "host=${DB_HOST_1} port=${DB_PORT_1_ODD} user=${DB_USER_1} password=${DB_PASSWORD_1} dbname=${DB_NAME_1} sslmode=disable" up
 
 migratestorage:
 	cd migrations/storage; ./goose postgres "host=${DB_HOST_1} port=${DB_PORT_1} user=${DB_USER_1} password=${DB_PASSWORD_1} dbname=${DB_NAME_1} sslmode=disable" up

@@ -86,7 +86,30 @@ services:
       - '${DB_HOST_1}:${DB_PORT_1}:5432'
     networks:
       - hw4
-
+  postgres-1_even:
+    image: postgres:latest
+    container_name: postgres_container_hw4_1_even
+    environment:
+      - POSTGRES_USER=${DB_USER_1}
+      - POSTGRES_PASSWORD=${DB_PASSWORD_1}
+      - POSTGRES_DB=${DB_NAME_1}
+      - DATABASE_HOST=${DB_HOST_1}
+    networks:
+      - hw4
+    ports:
+      - '${DB_HOST_1}:${DB_PORT_1_EVEN}:5432'
+  postgres-1_odd:
+    image: postgres:latest
+    container_name: postgres_container_hw4_1_odd
+    environment:
+      - POSTGRES_USER=${DB_USER_1}
+      - POSTGRES_PASSWORD=${DB_PASSWORD_1}
+      - POSTGRES_DB=${DB_NAME_1}
+      - DATABASE_HOST=${DB_HOST_1}
+    networks:
+      - hw4
+    ports:
+      - '${DB_HOST_1}:${DB_PORT_1_ODD}:5432'
   postgres-2:
     image: postgres:latest
     container_name: postgres_container_hw4_2
