@@ -10,5 +10,5 @@ CREATE TABLE storage_even(
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE storage;
+DROP TABLE storage_even;
 -- +goose StatementEnd

@@ -6,24 +6,37 @@ import (
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/model/storage"
 )
 
-type StorageRepo struct {
-	pool *pgxpool.Pool
+type cache interface {
+	Get(orderID int) ([]storage.StoreItem, error)
+	Set(orderID int, items []storage.StoreItem) error
+	Delete(orderID int) error
 }
 
-func NewStorageRepo(pool *pgxpool.Pool) *StorageRepo {
+type StorageRepo struct {
+	pool  *pgxpool.Pool
+	cache cache
+}
+
+func NewStorageRepo(pool *pgxpool.Pool, cache cache) *StorageRepo {
 	return &StorageRepo{
-		pool: pool,
+		pool:  pool,
+		cache: cache,
 	}
 }
 
-func (s StorageRepo) GetUnreservedByOrderID(orderID int) []storage.StoreItem {
+func (s StorageRepo) GetUnreservedByOrderID(orderID int) (items []storage.StoreItem) {
+
+	items, err := s.cache.Get(orderID)
+	if err == nil {
+		return items
+	}
+
 	//language=PostgreSQL
 	const sql = `SELECT order_id, product_id, is_reserved FROM storage WHERE order_id = $1`
 
 	ctx := context.Background()
 	row, _ := s.pool.Query(ctx, sql, orderID)
 
-	var items []storage.StoreItem
 	for row.Next() {
 		item := storage.StoreItem{}
 
@@ -34,6 +47,9 @@ func (s StorageRepo) GetUnreservedByOrderID(orderID int) []storage.StoreItem {
 		)
 		items = append(items, item)
 	}
+
+	_ = s.cache.Set(orderID, items)
+
 	return items
 }
 
@@ -43,6 +59,7 @@ func (s StorageRepo) ReserveByOrderID(orderID int) {
 
 	ctx := context.Background()
 	_, _ = s.pool.Query(ctx, sql, orderID)
+	_ = s.cache.Delete(orderID)
 }
 
 func (s StorageRepo) UnreserveByOrderID(orderID int) {
@@ -51,4 +68,5 @@ func (s StorageRepo) UnreserveByOrderID(orderID int) {
 
 	ctx := context.Background()
 	_, _ = s.pool.Query(ctx, sql, orderID)
+	_ = s.cache.Delete(orderID)
 }

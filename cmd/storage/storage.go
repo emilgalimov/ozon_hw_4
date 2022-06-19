@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"gitlab.ozon.dev/emilgalimov/homework-4/internal/caches"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/config"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/db"
 	"gitlab.ozon.dev/emilgalimov/homework-4/internal/saga"
@@ -45,7 +46,8 @@ func main() {
 		log.Fatal("error pinging db: ", err)
 	}
 
-	repo := db.NewStorageRepo(conn)
+	cache := caches.NewStorageMemcached("127.0.0.1:11211")
+	repo := db.NewStorageRepo(conn, cache)
 
 	stor := storageService.NewStorage(repo)
 

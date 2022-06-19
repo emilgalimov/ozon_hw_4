@@ -135,3 +135,8 @@ services:
       - '${DB_HOST_3}:${DB_PORT_3}:5432'
     networks:
       - hw4
+  memcached:
+    image: memcached:latest
+    container_name: memcached_hw4
+    ports:
+      - '127.0.0.1:11211:11211'

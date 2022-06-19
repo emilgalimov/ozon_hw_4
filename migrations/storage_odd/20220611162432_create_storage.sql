@@ -10,5 +10,5 @@ CREATE TABLE storage_odd(
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE storage;
+DROP TABLE storage_odd;
 -- +goose StatementEnd

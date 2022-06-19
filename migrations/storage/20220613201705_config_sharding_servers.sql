@@ -4,7 +4,7 @@ CREATE EXTENSION postgres_fdw;
 
 CREATE SERVER storage_even
 FOREIGN DATA WRAPPER postgres_fdw
-OPTIONS (host 'postgres-1_even', port '5432', dbname 'storage_even');
+OPTIONS (host 'postgres-1_even', port '5432', dbname 'storage');
 
 CREATE USER MAPPING FOR user
 SERVER storage_even
@@ -12,7 +12,7 @@ OPTIONS (user 'user', password 'pass');
 
 CREATE SERVER storage_odd
     FOREIGN DATA WRAPPER postgres_fdw
-    OPTIONS (host 'postgres-1_odd', port '5432', dbname 'storage_odd');
+    OPTIONS (host 'postgres-1_odd', port '5432', dbname 'storage');
 
 CREATE USER MAPPING FOR user
     SERVER storage_odd
